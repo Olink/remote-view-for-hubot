@@ -54,11 +54,19 @@ global.eventemitter.on("message", function(message) {
 
         console.log(stack.length);
     }
+    else {
+        var stack = new Array;
+        stack.push(message);
+        channelHistory[message.channel.toLowerCase()] = stack;
+    }
 
     if (message.channel.toLowerCase() === "tshock")
         io.emit('message', message);
 });
 
 rl.on('line', function(line) {
-   global.eventemitter.emit("message", {time:new Date(), channel:"console", user:"console", message:line});
+    if (line === "exit") {
+        process.exit(0);
+    }
+   global.eventemitter.emit("message", {time:new Date(), channel:"TShock", user:"console", message:line});
 });

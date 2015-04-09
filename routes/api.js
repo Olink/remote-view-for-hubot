@@ -12,9 +12,12 @@ router.post('/api', bodyParser.json(), function(req, res) {
     time = req.body['time'];
     var newMessage = {time:time, message:message, channel:channel, user:user['name']}
     global.eventemitter.emit("message", newMessage)
+    res.status(200)
+    res.send("ok")
 });
 
 router.get('/api', function(req, res) {
+    res.status(200)
     res.send("ok")
     res.end()
 });
