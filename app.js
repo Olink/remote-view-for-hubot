@@ -1,13 +1,20 @@
 var express = require('express');
 var app = express();
-var emitter = require('events').EventEmitter
-global.eventemitter = new emitter()
+var emitter = require('events').EventEmitter;
+global.eventemitter = new emitter();
 
-var stack = new Array
+var readline = require('readline');
+
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+var channelHistory = {};
 
 
-app.set('views', './views')
-app.set('view engine', 'jade')
+app.set('views', './views');
+app.set('view engine', 'jade');
 
 
 app.use(function(err, req, res, next) {
@@ -18,7 +25,7 @@ app.use(function(err, req, res, next) {
 app.use('/', require('./routes/api.js'));
 
 app.get('/', function (req, res) {
-    res.render('index')
+    res.render('index');
 });
 
 var server = app.listen(3000, function () {
@@ -32,16 +39,26 @@ var server = app.listen(3000, function () {
 
 var io = require('socket.io')(server);
 io.on('connection', function (socket) {
-    socket.emit('messages', { messages: stack });
+    if ("tshock" in channelHistory)
+        socket.emit('messages', { messages: channelHistory['tshock'] });
 });
 
 global.eventemitter.on("message", function(message) {
-    console.log(message.time + "> [" + message.channel + "] " + message.user + ": " + message.message)
+    console.log(message.time + "> [" + message.channel + "] " + message.user + ": " + message.message);
 
-    stack.push(message)
-    if(stack.length > 50)
-        stack.pop()
+    if (message.channel.toLowerCase() in channelHistory) {
+        var stack = channelHistory[message.channel.toLowerCase()];
+        stack.push(message);
+        if (stack.length > 50)
+            stack.pop();
 
-    console.log(stack.length)
-    io.emit('message', message)
+        console.log(stack.length);
+    }
+
+    if (message.channel.toLowerCase() === "tshock")
+        io.emit('message', message);
+});
+
+rl.on('line', function(line) {
+   global.eventemitter.emit("message", {time:new Date(), channel:"console", user:"console", message:line});
 });

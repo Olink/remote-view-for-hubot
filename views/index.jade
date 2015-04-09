@@ -6,7 +6,7 @@ head
         var socket = io.connect('http://localhost:3000');
         socket.on('messages', function (data) {
             console.log(data.messages.length)
-            for (var i = data.messages.length - 1; i >= 0; i--) {
+            for (var i = 0; i < data.messages.length; i++) {
                 console.log(data.messages[i]);
                 var sp1 = document.createElement("span");
                 sp1.innerHTML = data.messages[i].time + "> [" + data.messages[i].channel + "] " + data.messages[i].user + ": " + data.messages[i].message + "<br \>";
