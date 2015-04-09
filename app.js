@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express();
+var swig = require('swig');
 var emitter = require('events').EventEmitter;
 global.eventemitter = new emitter();
 
@@ -12,10 +13,12 @@ var rl = readline.createInterface({
 
 var channelHistory = {};
 
+swig.setDefaults({ cache: false });
 
+app.engine('html', swig.renderFile);
 app.set('views', './views');
-app.set('view engine', 'jade');
-
+app.set('view engine', 'swig');
+app.use(express.static('static'));
 
 app.use(function(err, req, res, next) {
     console.error(err.stack);
@@ -25,7 +28,7 @@ app.use(function(err, req, res, next) {
 app.use('/', require('./routes/api.js'));
 
 app.get('/', function (req, res) {
-    res.render('index');
+    res.render('index.html', {user: {loggedIn: false}});
 });
 
 var server = app.listen(3000, function () {
@@ -50,7 +53,7 @@ global.eventemitter.on("message", function(message) {
         var stack = channelHistory[message.channel.toLowerCase()];
         stack.push(message);
         if (stack.length > 50)
-            stack.pop();
+            console.log(stack.shift());
 
         console.log(stack.length);
     }
